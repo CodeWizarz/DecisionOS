@@ -1,30 +1,17 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional
-from uuid import UUID, uuid4
+from typing import List, Dict, Optional, Any
+from uuid import UUID
 from pydantic import BaseModel, Field, ConfigDict
 
-class DataPoint(BaseModel):
-    """
-    Represents a single operational data input.
-    
-    Why:
-    - Captures raw data before processing.
-    - strict validation ensures downstream quality.
-    """
-    id: UUID = Field(default_factory=uuid4)
-    source: str = Field(..., description="Origin of the data (e.g., 'sensor_1', 'crm_api')")
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
-    data: Dict[str, Any] = Field(..., description="Raw JSON payload")
-    
-    model_config = ConfigDict(from_attributes=True)
+# ... existing schemas ...
 
 class DecisionRequest(BaseModel):
     """
     Parameters for generating a decision.
     """
-    context_id: str = Field(..., description="Identifier for the decision context")
+    context_id: str = Field(..., description="Identifier for the decision context (e.g. incident_ID)")
     criteria: List[str] = Field(default_factory=list, description="Specific criteria to prioritize")
-    
+
 class DecisionExplanation(BaseModel):
     """
     Explanation for a generated decision.
@@ -37,9 +24,9 @@ class Decision(BaseModel):
     """
     The output decision entity.
     """
-    id: UUID = Field(default_factory=uuid4)
-    request_id: UUID
-    rank: int
+    id: UUID
+    request_id: Optional[UUID] = None
+    rank: int = 0
     content: Dict[str, Any]
     explanation: Optional[DecisionExplanation] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
