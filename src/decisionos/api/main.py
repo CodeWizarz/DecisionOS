@@ -1,0 +1,62 @@
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+import structlog
+
+from decisionos.core.config import settings
+from decisionos.core.logging import configure_logging
+from decisionos.api import v1
+
+# Configure logging for the main process
+configure_logging()
+logger = structlog.get_logger()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Lifespan events: startup and shutdown logic.
+    
+    Why:
+    - Better than on_event("startup") deprecated methods.
+    - Central place for connection pooling initialization if needed.
+    """
+    logger.info("startup", app=settings.APP_NAME, env=settings.ENV)
+    
+    # Validation check: Ensure DB connection is possible here if strictly required
+    # or rely on connection pool lazy init
+    
+    yield
+    
+    logger.info("shutdown")
+
+def create_app() -> FastAPI:
+    app = FastAPI(
+        title=settings.APP_NAME,
+        description="Production AI Decision Intelligence System",
+        version="0.1.0",
+        lifespan=lifespan,
+        docs_url="/docs" if settings.ENV != "production" else None,
+        redoc_url="/redoc" if settings.ENV != "production" else None,
+    )
+
+    # Security: Restrict CORS in production
+    if settings.ENV == "development":
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
+
+    # Health Check
+    @app.get("/health", tags=["System"])
+    async def health_check():
+        return {"status": "ok", "version": "0.1.0"}
+
+    # Include API Routers
+    app.include_router(v1.router, prefix="/api/v1")
+
+    return app
+
+app = create_app()
