@@ -4,12 +4,13 @@ from fastapi.middleware.cors import CORSMiddleware
 import structlog
 
 from decisionos.core.config import settings
-from decisionos.core.logging import configure_logging
+from decisionos.core.logging import configure_logging, logging_middleware
 from decisionos.api import v1
 
 # Configure logging for the main process
 configure_logging()
 logger = structlog.get_logger()
+# Middleware addition handled in create_app
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -38,6 +39,9 @@ def create_app() -> FastAPI:
         docs_url="/docs" if settings.ENV != "production" else None,
         redoc_url="/redoc" if settings.ENV != "production" else None,
     )
+
+    # Middleware
+    app.middleware("http")(logging_middleware)
 
     # Security: Restrict CORS in production
     if settings.ENV == "development":

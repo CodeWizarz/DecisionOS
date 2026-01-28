@@ -6,7 +6,7 @@ from datetime import datetime
 
 from decisionos.core.database import get_db
 from decisionos.domain import schemas, models
-from decisionos.worker.tasks import process_data_point
+from decisionos.core.queue import queue
 
 router = APIRouter()
 logger = structlog.get_logger()
@@ -27,7 +27,7 @@ async def ingest_data_point(
     Flow:
     1. Validate input (Pydantic)
     2. Persist raw data to DB (AsyncPG)
-    3. Trigger async background processing (Celery)
+    3. Trigger async background processing (Redis/Celery)
     """
     # 1. Persist
     db_model = models.DataPointModel(
@@ -40,8 +40,8 @@ async def ingest_data_point(
     await db.commit()
     await db.refresh(db_model)
     
-    # 2. Enqueue for processing
-    process_data_point.delay(str(db_model.id), data.data)
+    # 2. Enqueue for processing via abstraction
+    queue.enqueue_data_processing(str(db_model.id), data.data)
     
     logger.info("data_ingested", id=str(data.id), source=data.source)
     return db_model
@@ -75,6 +75,6 @@ async def batch_ingest(
     
     # Trigger tasks in bulk effectively
     for model in db_models:
-         process_data_point.delay(str(model.id), model.payload)
+         queue.enqueue_data_processing(str(model.id), model.payload)
          
     return db_models
