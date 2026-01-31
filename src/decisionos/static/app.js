@@ -1,11 +1,22 @@
 const API_BASE = '/api/v1';
 
+
+// State
+let RECORDING_MODE = false;
+
 document.addEventListener('DOMContentLoaded', () => {
     updateStatus('Connected (Demo Mode)');
     fetchDecisions();
 
     document.getElementById('trigger-btn').addEventListener('click', injectIncident);
     document.getElementById('reset-btn').addEventListener('click', resetDemo);
+
+    // Recording Mode Listener
+    const toggle = document.getElementById('recording-mode');
+    toggle.addEventListener('change', (e) => {
+        RECORDING_MODE = e.target.checked;
+        console.log(`Recording Mode: ${RECORDING_MODE ? 'ON' : 'OFF'}`);
+    });
 });
 
 async function resetDemo() {
@@ -66,7 +77,10 @@ async function injectIncident() {
 
         if (response.status === 202) {
             const data = await response.json();
-            addLog(`Incident ID ${data.id.substring(0, 8)} queued for processing.`);
+            // In recording mode, suppress "queued" message to reduce noise
+            if (!RECORDING_MODE) {
+                addLog(`Incident ID ${data.id.substring(0, 8)} queued for processing.`);
+            }
 
             // Poll for result
             pollDecision(data.id, btn);
@@ -89,6 +103,9 @@ async function pollDecision(id, btn) {
     let attempts = 0;
     const maxAttempts = 20; // 20 * 1s = 20s timeout
 
+    // Smooth, slower polling in recording mode
+    const pollInterval = RECORDING_MODE ? 800 : 1000;
+
     const interval = setInterval(async () => {
         attempts++;
         try {
@@ -99,7 +116,14 @@ async function pollDecision(id, btn) {
 
                 if (decision.result && decision.result.status !== 'processing') {
                     clearInterval(interval);
-                    addLog(`Processing complete. Decision generated.`);
+
+                    // Artificial pacing for recording mode
+                    if (RECORDING_MODE) {
+                        // Subtle delay before showing "Success" state
+                        await new Promise(r => setTimeout(r, 600));
+                    }
+
+                    if (!RECORDING_MODE) addLog(`Processing complete. Decision generated.`);
                     resetButton(btn);
                     renderDecision(decision);
                 } else if (attempts >= maxAttempts) {
@@ -111,7 +135,7 @@ async function pollDecision(id, btn) {
         } catch (e) {
             console.error(e);
         }
-    }, 1000);
+    }, pollInterval);
 }
 
 async function fetchDecisions() {
@@ -134,7 +158,14 @@ async function fetchDecisions() {
     }
 }
 
-function renderDecision(decision) {
+async function renderDecision(decision) {
+
+    // Demo Ergonomics:
+    // If we are recording, pause briefly so the eye captures the "Processing" -> "Done" transition
+    if (RECORDING_MODE) {
+        await new Promise(r => setTimeout(r, 400));
+    }
+
     const template = document.getElementById('decision-template');
     const clone = template.content.cloneNode(true);
 
@@ -262,6 +293,15 @@ function renderDecision(decision) {
         toggle.querySelector('svg').style.transform = chain.classList.contains('visible') ? 'rotate(180deg)' : 'rotate(0deg)';
     });
 
+    // Auto-expand in Recording Mode to show depth immediately
+    if (RECORDING_MODE) {
+        // Slight delay for the click simulation
+        setTimeout(() => {
+            chain.classList.add('visible');
+            toggle.querySelector('svg').style.transform = 'rotate(180deg)';
+        }, 800);
+    }
+
     // MARK: Attention Guidance
     // Highlighting the new card helps reviewers instantly spot value.
     // Auto-scroll ensures they don't miss the action.
@@ -281,6 +321,14 @@ function renderDecision(decision) {
 }
 
 function addLog(msg, isError = false) {
+    // Demo Ergonomics: Suppress visual noise if recording
+    // We generally only want to see critical errors or the initial trigger
+    if (RECORDING_MODE && !isError) {
+        // Allow the "Injecting..." message but maybe hide others?
+        // For now, simpler heuristic: Allow only initial injection message.
+        if (!msg.includes("Injecting")) return;
+    }
+
     const stream = document.getElementById('signal-stream');
     const div = document.createElement('div');
     div.className = 'stream-item';
