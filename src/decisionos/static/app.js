@@ -145,6 +145,28 @@ function renderDecision(decision) {
     const explanation = decision.explanation || {};
 
     // Header
+    // Header - Decision Summary
+    const header = clone.querySelector('.summary-header');
+
+    // Create label group container locally if not in template yet (or assume template updated)
+    // We will replace the .decision-label in the template with a group or append to it.
+    // For safety with existing template, let's just insert the badge after the label.
+
+    // Badge "DECISION GENERATED"
+    const badge = document.createElement('span');
+    badge.className = 'generated-badge';
+    badge.textContent = 'Decision Generated';
+
+    // Find the label column
+    const label = clone.querySelector('.decision-label');
+    // Wrap to ensure spacing
+    const group = document.createElement('div');
+    group.className = 'decision-label-group';
+
+    label.parentNode.insertBefore(group, label);
+    group.appendChild(label);
+    group.appendChild(badge);
+
     clone.querySelector('.id-val').textContent = decision.id.substring(0, 8);
     clone.querySelector('.timestamp').textContent = new Date(decision.created_at).toLocaleTimeString();
 
@@ -240,9 +262,18 @@ function renderDecision(decision) {
         toggle.querySelector('svg').style.transform = chain.classList.contains('visible') ? 'rotate(180deg)' : 'rotate(0deg)';
     });
 
+    // MARK: Attention Guidance
+    // Highlighting the new card helps reviewers instantly spot value.
+    // Auto-scroll ensures they don't miss the action.
+    const card = clone.querySelector('.decision-card');
+    card.classList.add('new-item');
+
     const container = document.getElementById('decision-feed');
     // Prepend to show newest first
     container.insertBefore(clone, container.firstChild);
+
+    // Auto-scroll to top to ensure visibility
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
     // Remove empty state if present
     const empty = container.querySelector('.empty-state');

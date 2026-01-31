@@ -230,6 +230,26 @@ header {
     animation: slideIn 0.4s ease-out forwards;
 }
 
+.decision-card.new-item {
+    animation: slideIn 0.4s ease-out forwards, glow 2s ease-out forwards;
+}
+
+@keyframes glow {
+    0% {
+        box-shadow: 0 0 0 0 rgba(49, 130, 206, 0.4);
+        border-color: var(--primary-color);
+    }
+
+    70% {
+        box-shadow: 0 0 0 4px rgba(49, 130, 206, 0);
+        border-color: var(--border-color);
+    }
+
+    100% {
+        border-color: var(--border-color);
+    }
+}
+
 .decision-summary {
     padding: 20px;
 }
@@ -239,6 +259,24 @@ header {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 12px;
+}
+
+.decision-label-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.generated-badge {
+    font-size: 0.65rem;
+    background: #ebf8ff;
+    color: #2c5282;
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid #bee3f8;
+    font-weight: 600;
+    text-transform: uppercase;
+    animation: fadeIn 0.5s ease-in;
 }
 
 .decision-label {
