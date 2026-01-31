@@ -175,14 +175,35 @@ class SupervisorAgent(BaseAgent):
         # If High Alert but High Risk -> We might proceed but with caution.
         # For this demo, we just approve the proposal.
         
-        return AgentReasoning(
-            thought_process=f"Synthesizing proposal '{proposal}' with identified risks. Decision ratified.",
-            evidence_used=["SignalAnalysis", "StrategicProposal", "RiskAssessment"],
-            confidence=0.92,
-            conclusion={
+        # Heuristic Impact Calculation
+        time_saved = 0.0
+        risk_reduction = 0.0
+        
+        if final_decision == "DECLARE_SEV1_INCIDENT":
+             # Automation of war room setup + correlation
+             time_saved = 45.0 
+             risk_reduction = 8.5 # Pre-empting cascade
+        elif final_decision == "INVESTIGATE":
+             time_saved = 15.0 # Automated ticket routing + context
+             risk_reduction = 4.0
+        elif final_decision == "MONITOR":
+             time_saved = 5.0 # Automated variance check
+             risk_reduction = 2.0
+             
+        conclusion = {
                 "final_decision": final_decision, 
                 "execution_plan": details,
                 "risk_summary": str(risks),
-                "status": "APPROVED"
+                "status": "APPROVED",
+                "impact_metrics": {
+                    "saved_minutes": time_saved,
+                    "risk_score": risk_reduction
+                }
             }
+        
+        return AgentReasoning(
+            thought_process=f"Synthesizing proposal '{proposal}' with identified risks. Impact estimated: {time_saved}m saved.",
+            evidence_used=["SignalAnalysis", "StrategicProposal", "RiskAssessment", "ROIHeuristicTable"],
+            confidence=0.92,
+            conclusion=conclusion
         )

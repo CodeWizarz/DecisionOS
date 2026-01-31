@@ -72,6 +72,10 @@ async def run_agent_pipeline(decision_id: str, payload: Dict[str, Any]):
             
             if decision:
                 decision.result = r4.conclusion
+                
+                # Extract impact from conclusion
+                impact = r4.conclusion.get("impact_metrics", {})
+                
                 decision.explanation = {
                     "summary": r4.thought_process,
                     "reasoning_trace": [
@@ -81,11 +85,15 @@ async def run_agent_pipeline(decision_id: str, payload: Dict[str, Any]):
                         {"agent": "SupervisorAgent", "thought": r4.thought_process}
                     ],
                     "factor_weights": {"signal_strength": 0.7, "risk_factors": 0.3},
-                    "confidence_score": r4.confidence
+                    "confidence_score": r4.confidence,
+                    "impact": {
+                        "estimated_time_saved_minutes": impact.get("saved_minutes", 0.0),
+                        "estimated_risk_reduction_score": impact.get("risk_score", 0.0)
+                    }
                 }
                 decision.confidence = r4.confidence
                 await session.commit()
-                logger.info("decision_persisted", decision_id=decision_id)
+                logger.info("decision_persisted", decision_id=decision_id, impact=impact)
             else:
                 logger.error("decision_not_found_in_db", decision_id=decision_id)
                 
