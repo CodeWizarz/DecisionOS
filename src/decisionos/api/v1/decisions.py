@@ -28,27 +28,36 @@ async def generate_decision(
     
     Process:
     1. Validate request (Pydantic)
-    2. Enqueue 'generate_decision' task (Async)
-    3. Return 'Accepted' immediately with decision placeholder ID
+    2. Persist placeholder (Pending state)
+    3. Enqueue 'generate_decision' task (Async)
+    4. Return 'Accepted' immediately
     """
     # Create placeholder decision record
     decision_id = uuid4()
     
-    # In a real impl, we would persist the request first.
-    # Logic simplified for demo duration.
+    new_decision = models.DecisionModel(
+        id=decision_id,
+        request_id=uuid4(), # Should probably link to request, but uuid4 is fine for now
+        result={"status": "processing", "stage": "ingestion"},
+        explanation=None,
+        confidence=0.0
+    )
+    
+    db.add(new_decision)
+    # No commit here? Depends(get_db) commits at the end of the yield block.
+    # But we need it committed BEFORE the worker tries to read it?
+    # Yes, race condition if worker is faster.
+    # We should manual commit here to be safe, or assume worker latnecy > DB commit.
+    # Explicit commit is safer.
+    await db.commit()
+    await db.refresh(new_decision)
     
     # Enqueue pipeline task
     queue.enqueue_data_processing(str(decision_id), request.model_dump())
     
     # Return provisional response 
     # (Client polls /decisions/{id} for result)
-    return schemas.Decision(
-        id=decision_id,
-        request_id=uuid4(), 
-        rank=0,
-        content={"status": "processing"},
-        created_at=datetime.utcnow() 
-    )
+    return new_decision
 
 @router.get(
     "/{decision_id}",
