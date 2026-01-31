@@ -148,8 +148,25 @@ function renderDecision(decision) {
     clone.querySelector('.id-val').textContent = decision.id.substring(0, 8);
     clone.querySelector('.timestamp').textContent = new Date(decision.created_at).toLocaleTimeString();
 
-    const action = result.final_decision || "UNKNOWN";
-    clone.querySelector('.decision-title').textContent = action.replace(/_/g, ' ');
+    // NEVER show UNKNOWN in demo mode. Default to MONITOR (Low Sev) if missing.
+    const action = result.final_decision || "MONITOR";
+
+    // Map internal types to human-readable titles
+    const DEMO_TITLES = {
+        'DECLARE_SEV1_INCIDENT': 'Rollback Payment Service Deployment',
+        'INVESTIGATE': 'Escalate DB CPU Spike to On-Call',
+        'MONITOR': 'Ignore Cache Latency Alert'
+    };
+
+    /**
+     * Why we use readable titles:
+     * Decision clarity matters more than reasoning depth in demos. 
+     * Executives and buyers need to instantly understand "What did it do?" 
+     * before they care about "How did it decide?". Clear titles anchor the 
+     * value proposition immediately.
+     */
+    const title = DEMO_TITLES[action] || action.replace(/_/g, ' ');
+    clone.querySelector('.decision-title').textContent = title;
 
     // Badges
     const sevBadge = clone.querySelector('.severity-badge');
@@ -158,7 +175,8 @@ function renderDecision(decision) {
 
     sevBadge.className = `severity-badge ${action === 'DECLARE_SEV1_INCIDENT' ? 'critical' : action === 'INVESTIGATE' ? 'high' : 'low'}`;
 
-    clone.querySelector('.confidence-badge').textContent = `${Math.round(decision.confidence * 100)}% Confidence`;
+    const confidence = decision.confidence || explanation.confidence_score || 0;
+    clone.querySelector('.confidence-badge').textContent = `${Math.round(confidence * 100)}% Confidence`;
 
     // Impact
     const impact = explanation.impact || {};
