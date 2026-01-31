@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from decisionos.api.v1 import ingest, decisions
+from decisionos.api.v1 import ingest, decisions, demo
 
 router = APIRouter()
 

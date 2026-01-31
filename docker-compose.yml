@@ -12,12 +12,18 @@ services:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
       - LOG_LEVEL=INFO
+      - DEMO_MODE=true
+      - USE_LLM=false
+      - PYTHONPATH=/app/src
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-    command: uvicorn src.decisionos.api.main:app --host 0.0.0.0 --port 8000 --reload
+    # Run migrations before starting server
+    command: >
+      sh -c "alembic upgrade head && 
+             uvicorn decisionos.api.main:app --host 0.0.0.0 --port 8000 --reload"
     volumes:
       - ./src:/app/src # Hot reload
 
@@ -30,12 +36,15 @@ services:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
       - LOG_LEVEL=INFO
+      - DEMO_MODE=true
+      - USE_LLM=false
+      - PYTHONPATH=/app/src
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-    command: celery -A src.decisionos.worker.app worker --loglevel=info
+    command: celery -A decisionos.worker.app worker --loglevel=info
     volumes:
       - ./src:/app/src
 

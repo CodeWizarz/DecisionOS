@@ -5,6 +5,17 @@ from pydantic import BaseModel, Field, ConfigDict
 
 # ... existing schemas ...
 
+class DataPoint(BaseModel):
+    """
+    Raw operational signal/event.
+    """
+    id: UUID
+    source: str = Field(..., description="Source system identifier (e.g. 'datadog', 'pagerduty')")
+    data: Dict[str, Any] = Field(..., description="Raw JSON payload from the source")
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+    model_config = ConfigDict(from_attributes=True)
+
 class DecisionRequest(BaseModel):
     """
     Parameters for generating a decision.

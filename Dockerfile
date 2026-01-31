@@ -50,7 +50,8 @@ COPY --from=builder /app/.venv /app/.venv
 # Copy application code
 COPY src /app/src
 COPY alembic.ini /app/
-# (Optional) COPY alembic /app/alembic
+# Copy migrations directory
+COPY alembic /app/alembic
 
 # Create a non-root user for security
 RUN groupadd -g 1000 decisionos && \
@@ -59,5 +60,8 @@ RUN groupadd -g 1000 decisionos && \
 
 USER decisionos
 
+# Add src to PYTHONPATH so imports like 'decisionos.api' work
+ENV PYTHONPATH=/app/src
+
 # Default to API, but can be overridden for worker
-CMD ["uvicorn", "src.decisionos.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "decisionos.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
