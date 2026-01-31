@@ -1,7 +1,10 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 import structlog
+import os
 
 from decisionos.core.config import settings
 from decisionos.core.logging import configure_logging, logging_middleware
@@ -39,6 +42,16 @@ def create_app() -> FastAPI:
         docs_url="/docs" if settings.ENV != "production" else None,
         redoc_url="/redoc" if settings.ENV != "production" else None,
     )
+
+    # Mount Static Files for Demo UI
+    # We use a relative path from this file to static directory
+    static_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
+    if os.path.exists(static_dir):
+        app.mount("/demo", StaticFiles(directory=static_dir, html=True), name="demo")
+    
+    @app.get("/", include_in_schema=False)
+    async def root():
+        return RedirectResponse(url="/demo")
 
     # Middleware
     app.middleware("http")(logging_middleware)

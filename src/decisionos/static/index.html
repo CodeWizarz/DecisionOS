@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DecisionOS Demo</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="logo">DecisionOS <span class="badge">DEMO</span></div>
+        <div class="status-bar" id="connection-status">Connecting...</div>
+    </header>
+
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="card">
+                <h3>Incident Stream</h3>
+                <p class="subtitle">Simulated Infrastructure Signals</p>
+                <div id="signal-stream" class="stream-container">
+                    <!-- Signals injected here -->
+                    <div class="stream-item">
+                        <span class="timestamp">Now</span>
+                        <span class="msg">System initialized. Waiting for signals...</span>
+                    </div>
+                </div>
+                <button id="trigger-btn" class="primary-btn">Inject Synthetic Incident</button>
+            </div>
+            
+            <div class="card help-card">
+                <h3>About</h3>
+                <p>This demo visualizes the <strong>Multi-Agent Reasoning Chain</strong>.</p>
+                <p>1. <strong>Signal Agent</strong>: Detects anomalies.</p>
+                <p>2. <strong>Decision Agent</strong>: Proposes actions.</p>
+                <p>3. <strong>Critic Agent</strong>: Validates safety.</p>
+                <p>4. <strong>Supervisor Agent</strong>: Finalizes decision.</p>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="header-row">
+                <h2>Decision Log</h2>
+                <div class="filters">
+                    <span class="active">Live</span>
+                    <span>History</span>
+                </div>
+            </div>
+
+            <div id="decision-feed" class="feed-container">
+                <!-- Decision Cards will appear here -->
+                <div class="empty-state">
+                    No decisions generated yet. Trigger an incident to start.
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <template id="decision-template">
+        <div class="decision-card">
+            <div class="card-header">
+                <div class="title-row">
+                    <span class="id-badge">ID: <span class="id-val"></span></span>
+                    <span class="timestamp"></span>
+                </div>
+                <h3 class="decision-title"></h3>
+                <div class="badges">
+                    <span class="severity-badge"></span>
+                    <span class="confidence-badge"></span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="impact-section">
+                    <h4>Projected Impact</h4>
+                    <div class="metrics">
+                        <div class="metric">
+                            <span class="label">Time Saved</span>
+                            <span class="value time-saved"></span>
+                        </div>
+                        <div class="metric">
+                            <span class="label">Risk Reduction</span>
+                            <span class="value risk-score"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="expand-toggle">
+                    <span>Show Agent Reasoning Chain</span>
+                    <svg width="12" height="12" viewBox="0 0 12 12"><path d="M6 9L1 4h10z"/></svg>
+                </div>
+                
+                <div class="reasoning-chain hidden">
+                    <div class="chain-step signal-step">
+                        <div class="step-icon">📡</div>
+                        <div class="step-content">
+                            <h5>Signal Analyst</h5>
+                            <p class="thought"></p>
+                        </div>
+                    </div>
+                    <div class="chain-step decision-step">
+                        <div class="step-icon">⚡</div>
+                        <div class="step-content">
+                            <h5>Strategist</h5>
+                            <p class="thought"></p>
+                        </div>
+                    </div>
+                    <div class="chain-step critic-step">
+                        <div class="step-icon">🛡️</div>
+                        <div class="step-content">
+                            <h5>Risk Officer</h5>
+                            <p class="thought"></p>
+                        </div>
+                    </div>
+                    <div class="chain-step supervisor-step">
+                        <div class="step-icon">⚖️</div>
+                        <div class="step-content">
+                            <h5>Supervisor</h5>
+                            <p class="thought"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script src="app.js"></script>
+</body>
+</html>
