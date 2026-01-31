@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field
 from decisionos.domain.schemas import Decision
+from decisionos.engine.llm import LLMInferenceAdapter
 
 class AgentReasoning(BaseModel):
     """
@@ -29,6 +30,7 @@ class BaseAgent(ABC):
     def __init__(self, name: str, role: str):
         self.name = name
         self.role = role
+        self.llm = LLMInferenceAdapter()
 
     @abstractmethod
     async def run(self, context: Dict[str, Any]) -> AgentReasoning:
@@ -43,6 +45,21 @@ class SignalAgent(BaseAgent):
         super().__init__(name="SignalAnalyst", role="Pattern Recognition")
 
     async def run(self, context: Dict[str, Any]) -> AgentReasoning:
+        # Try LLM first
+        system_prompt = (
+            f"You are the {self.name} ({self.role}). \n"
+            "Analyze the provided data clusters for operational anomalies or signals. \n"
+            "Your conclusion MUST include a list of 'identified_issues' and a 'max_severity' score (0.0-1.0)."
+        )
+        user_prompt = f"Data Clusters: {context.get('clusters', {})}"
+        
+        prediction = await self.llm.predict(system_prompt, user_prompt, AgentReasoning)
+        if prediction:
+            return prediction
+            
+        return await self._run_heuristic(context)
+
+    async def _run_heuristic(self, context: Dict[str, Any]) -> AgentReasoning:
         # Minimal Real Implementation:
         # We analyze the input clusters to find high-priority items.
         # This proves we can transform raw normalized data into semantic issues.
@@ -91,6 +108,22 @@ class DecisionAgent(BaseAgent):
         super().__init__(name="DecisionMaker", role="Action Proposal")
 
     async def run(self, context: Dict[str, Any]) -> AgentReasoning:
+        # Try LLM first
+        system_prompt = (
+            f"You are the {self.name} ({self.role}). \n"
+            "Propose a concrete action plan based on the identified issues. \n"
+            "Your conclusion MUST include 'proposed_action' (Enum: MONTIOR, INVESTIGATE, DECLARE_SEV1_INCIDENT), "
+            "'action_details', and 'urgency'."
+        )
+        user_prompt = f"Identified Issues: {context.get('identified_issues', [])}. Severity: {context.get('max_severity', 0)}"
+        
+        prediction = await self.llm.predict(system_prompt, user_prompt, AgentReasoning)
+        if prediction:
+            return prediction
+            
+        return await self._run_heuristic(context)
+
+    async def _run_heuristic(self, context: Dict[str, Any]) -> AgentReasoning:
         issues = context.get("identified_issues", [])
         severity = context.get("max_severity", 0.0)
         
@@ -132,6 +165,24 @@ class CriticAgent(BaseAgent):
         super().__init__(name="RiskOfficer", role="Plan Validation")
 
     async def run(self, context: Dict[str, Any]) -> AgentReasoning:
+        # Try LLM first
+        system_prompt = (
+            f"You are the {self.name} ({self.role}). \n"
+            "Critique the proposed action for risks, side effects, or proportionality issues. \n"
+            "Your conclusion MUST include a list of 'risks' and a boolean 'approval'."
+        )
+        user_prompt = (
+            f"Proposal: {context.get('proposed_action')} ({context.get('urgency')}). "
+            f"Details: {context.get('action_details')}."
+        )
+        
+        prediction = await self.llm.predict(system_prompt, user_prompt, AgentReasoning)
+        if prediction:
+            return prediction
+            
+        return await self._run_heuristic(context)
+
+    async def _run_heuristic(self, context: Dict[str, Any]) -> AgentReasoning:
         proposal = context.get("proposed_action")
         urgency = context.get("urgency")
         
@@ -164,6 +215,25 @@ class SupervisorAgent(BaseAgent):
         super().__init__(name="ChiefDecisionOfficer", role="Final Synthesis")
 
     async def run(self, context: Dict[str, Any]) -> AgentReasoning:
+        # Try LLM first
+        system_prompt = (
+            f"You are the {self.name} ({self.role}). \n"
+            "Make a final binding decision based on the proposal and critique. \n"
+            "Your conclusion MUST include 'final_decision', 'execution_plan', 'risk_summary', 'status', and 'impact_metrics' (saved_minutes, risk_score)."
+        )
+        user_prompt = (
+            f"Proposal: {context.get('proposed_action')}. \n"
+            f"Critique: {context.get('risks')}. \n"
+            f"Approval Status: {context.get('approval')}."
+        )
+        
+        prediction = await self.llm.predict(system_prompt, user_prompt, AgentReasoning)
+        if prediction:
+            return prediction
+            
+        return await self._run_heuristic(context)
+
+    async def _run_heuristic(self, context: Dict[str, Any]) -> AgentReasoning:
         proposal = context.get("proposed_action")
         details = context.get("action_details")
         risks = context.get("risks", [])

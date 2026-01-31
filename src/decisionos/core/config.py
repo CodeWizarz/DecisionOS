@@ -32,4 +32,10 @@ class Settings(BaseSettings):
     CELERY_BROKER_URL: str = "redis://localhost:6379/0"
     CELERY_RESULT_BACKEND: str = "redis://localhost:6379/0"
 
+    # LLM Configuration
+    USE_LLM: bool = False
+    LLM_API_KEY: str | None = None
+    LLM_MODEL: str = "gpt-4-turbo-preview"
+    LLM_BASE_URL: str = "https://api.openai.com/v1"
+
 settings = Settings()
