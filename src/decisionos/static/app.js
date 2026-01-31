@@ -1,7 +1,7 @@
 const API_BASE = '/api/v1';
 
 document.addEventListener('DOMContentLoaded', () => {
-    updateStatus('Connected');
+    updateStatus('Connected (Demo Mode)');
     fetchDecisions();
 
     document.getElementById('trigger-btn').addEventListener('click', injectIncident);
@@ -21,13 +21,11 @@ async function injectIncident() {
     addLog("Injecting synthetic latency spikes in web-tier-04...");
 
     try {
-        const response = await fetch(`${API_BASE}/decisions/generate`, {
+        // Use deterministic Demo API
+        const response = await fetch(`${API_BASE}/demo/run-decision`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                context_id: `inc-${Date.now()}`,
-                criteria: ["speed", "accuracy"]
-            })
+            body: JSON.stringify({}) // Empty payload for demo
         });
 
         if (response.status === 202) {
@@ -53,7 +51,8 @@ async function pollDecision(id) {
     const interval = setInterval(async () => {
         attempts++;
         try {
-            const res = await fetch(`${API_BASE}/decisions/${id}`);
+            // Use deterministic Demo API retrieval
+            const res = await fetch(`${API_BASE}/demo/decision/${id}`);
             if (res.ok) {
                 const decision = await res.json();
 
@@ -76,6 +75,7 @@ async function pollDecision(id) {
 }
 
 async function fetchDecisions() {
+    // We maintain general decision listing for now, but UI primarily drives demo flow
     try {
         const res = await fetch(`${API_BASE}/decisions?limit=5`);
         if (res.ok) {
