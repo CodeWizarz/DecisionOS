@@ -16,7 +16,10 @@ function updateStatus(msg) {
 async function injectIncident() {
     const btn = document.getElementById('trigger-btn');
     btn.disabled = true;
-    btn.textContent = 'Injecting...';
+
+    // Add spinner and loading text
+    const originalText = btn.textContent;
+    btn.innerHTML = '<span class="spinner"></span>Processing...';
 
     addLog("Injecting synthetic latency spikes in web-tier-04...");
 
@@ -33,18 +36,23 @@ async function injectIncident() {
             addLog(`Incident ID ${data.id.substring(0, 8)} queued for processing.`);
 
             // Poll for result
-            pollDecision(data.id);
+            pollDecision(data.id, btn);
         } else {
             addLog("Error injecting incident.", true);
-            btn.disabled = false;
+            resetButton(btn);
         }
     } catch (e) {
         addLog(`Connection error: ${e}`, true);
-        btn.disabled = false;
+        resetButton(btn);
     }
 }
 
-async function pollDecision(id) {
+function resetButton(btn) {
+    btn.disabled = false;
+    btn.innerHTML = 'Inject Synthetic Incident';
+}
+
+async function pollDecision(id, btn) {
     let attempts = 0;
     const maxAttempts = 20; // 20 * 1s = 20s timeout
 
@@ -59,13 +67,12 @@ async function pollDecision(id) {
                 if (decision.result && decision.result.status !== 'processing') {
                     clearInterval(interval);
                     addLog(`Processing complete. Decision generated.`);
-                    document.getElementById('trigger-btn').disabled = false;
-                    document.getElementById('trigger-btn').textContent = 'Inject Synthetic Incident';
+                    resetButton(btn);
                     renderDecision(decision);
                 } else if (attempts >= maxAttempts) {
                     clearInterval(interval);
                     addLog("Timeout waiting for inference.", true);
-                    document.getElementById('trigger-btn').disabled = false;
+                    resetButton(btn);
                 }
             }
         } catch (e) {
@@ -143,9 +150,13 @@ function renderDecision(decision) {
     // Toggle
     const toggle = clone.querySelector('.expand-toggle');
     const chain = clone.querySelector('.reasoning-chain');
+
+    // Ensure hidden state initially via CSS class logic from style.css
+    // style.css defines .reasoning-chain { ... max-height: 0 ... }
+
     toggle.addEventListener('click', () => {
-        chain.classList.toggle('hidden');
-        toggle.querySelector('svg').style.transform = chain.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+        chain.classList.toggle('visible');
+        toggle.querySelector('svg').style.transform = chain.classList.contains('visible') ? 'rotate(180deg)' : 'rotate(0deg)';
     });
 
     const container = document.getElementById('decision-feed');
