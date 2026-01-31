@@ -67,40 +67,50 @@
 
     <template id="decision-template">
         <div class="decision-card">
-            <div class="card-header">
-                <div class="title-row">
-                    <span class="id-badge">ID: <span class="id-val"></span></span>
-                    <span class="timestamp"></span>
-                </div>
-                <h3 class="decision-title"></h3>
-                <div class="badges">
-                    <span class="severity-badge"></span>
-                    <span class="confidence-badge"></span>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="impact-section">
-                    <h4>Projected Impact</h4>
-                    <div class="metrics">
-                        <div class="metric">
-                            <span class="label">Time Saved</span>
-                            <span class="value time-saved"></span>
-                        </div>
-                        <div class="metric">
-                            <span class="label">Risk Reduction</span>
-                            <span class="value risk-score"></span>
-                        </div>
+            <!-- 
+                Why executives want conclusions first:
+                Structure follows Minto Pyramid Principle. 
+                1. The WHAT (Decision Summary) - Top level, immediate value.
+                2. The WHY (metrics & confidence) - Supporting data.
+                3. The HOW (Reasoning Chain) - Detailed proof, optional but available.
+            -->
+            <div class="decision-summary">
+                <div class="summary-header">
+                    <span class="decision-label">DECISION SUMMARY</span>
+                    <div class="meta-row">
+                        <span class="id-badge">ID: <span class="id-val"></span></span>
+                        <span class="timestamp"></span>
                     </div>
                 </div>
 
+                <div class="main-outcome">
+                    <h3 class="decision-title"></h3>
+                    <span class="confidence-badge"></span>
+                </div>
+
+                <div class="impact-metrics-row">
+                    <div class="metric-pill">
+                        <span class="label">Time Saved</span>
+                        <span class="value time-saved"></span>
+                    </div>
+                    <div class="metric-pill">
+                        <span class="label">Risk Reduction</span>
+                        <span class="value risk-score"></span>
+                    </div>
+                    <span class="severity-badge"></span>
+                </div>
+            </div>
+
+            <div class="reasoning-section">
                 <div class="expand-toggle">
-                    <span>Show Agent Reasoning Chain</span>
+                    <span>How the system reasoned</span>
                     <svg width="12" height="12" viewBox="0 0 12 12">
                         <path d="M6 9L1 4h10z" />
                     </svg>
                 </div>
 
                 <div class="reasoning-chain hidden">
+                    <!-- Agent Breakdown -->
                     <div class="chain-step signal-step">
                         <div class="step-icon">📡</div>
                         <div class="step-content">

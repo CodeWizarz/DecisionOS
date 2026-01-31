@@ -218,15 +218,200 @@ header {
 
 /* Animations & Transitions */
 
+/* Decision Card Refactor */
 .decision-card {
     background: var(--card-bg);
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    margin-bottom: 16px;
+    margin-bottom: 24px;
     overflow: hidden;
     transition: box-shadow 0.2s;
     opacity: 0;
     animation: slideIn 0.4s ease-out forwards;
+}
+
+.decision-summary {
+    padding: 20px;
+}
+
+.summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.decision-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+}
+
+.meta-row {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+}
+
+.main-outcome {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    gap: 16px;
+}
+
+.decision-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--text-primary);
+}
+
+.impact-metrics-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: #f8fafc;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #edf2f7;
+}
+
+.metric-pill {
+    display: flex;
+    flex-direction: column;
+}
+
+.metric-pill .label {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.metric-pill .value {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Badges */
+.confidence-badge {
+    white-space: nowrap;
+    font-size: 0.8rem;
+    background: #e6fffa;
+    color: #285e61;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.severity-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 3px 6px;
+    border-radius: 4px;
+    margin-left: auto;
+}
+
+.severity-badge.critical {
+    background: var(--danger-bg);
+    color: var(--danger-text);
+}
+
+.severity-badge.high {
+    background: var(--warning-bg);
+    color: var(--warning-text);
+}
+
+.severity-badge.low {
+    background: var(--success-bg);
+    color: var(--success-text);
+}
+
+/* Reasoning Section */
+.reasoning-section {
+    border-top: 1px solid var(--border-color);
+}
+
+.expand-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    background: #fcfcfc;
+    transition: background 0.2s;
+}
+
+.expand-toggle:hover {
+    background: #f1f5f9;
+    color: var(--text-primary);
+}
+
+.expand-toggle svg {
+    transition: transform 0.3s ease;
+}
+
+.reasoning-chain {
+    background: #ffffff;
+    padding: 0 20px;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Subtle easing */
+    border-top: 1px solid transparent;
+}
+
+.reasoning-chain.visible {
+    padding: 20px;
+    max-height: 1200px;
+    opacity: 1;
+    border-top-color: var(--border-color);
+}
+
+.chain-step {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #edf2f7;
+}
+
+.chain-step:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0px;
+}
+
+.step-icon {
+    font-size: 1.2rem;
+    background: #f7fafc;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.step-content h5 {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.step-content .thought {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--text-primary);
 }
 
 @keyframes slideIn {
@@ -239,27 +424,6 @@ header {
         opacity: 1;
         transform: translateY(0);
     }
-}
-
-.reasoning-chain {
-    background: #f8fafc;
-    margin-top: 0;
-    border-radius: 4px;
-    padding: 0 12px;
-    border: 1px solid transparent;
-    max-height: 0;
-    opacity: 0;
-    overflow: hidden;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.reasoning-chain.visible {
-    margin-top: 12px;
-    padding: 12px;
-    border-color: #edf2f7;
-    max-height: 800px;
-    /* Arbitrary large height */
-    opacity: 1;
 }
 
 /* Spinner */
