@@ -5,7 +5,40 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchDecisions();
 
     document.getElementById('trigger-btn').addEventListener('click', injectIncident);
+    document.getElementById('reset-btn').addEventListener('click', resetDemo);
 });
+
+async function resetDemo() {
+    const btn = document.getElementById('reset-btn');
+    const triggerBtn = document.getElementById('trigger-btn');
+
+    if (!confirm('Clear all decisions and reset demo state?')) return;
+
+    btn.textContent = 'Resetting...';
+    btn.disabled = true;
+
+    try {
+        await fetch(`${API_BASE}/demo/reset`, { method: 'POST' });
+
+        // Clear UI
+        document.getElementById('decision-feed').innerHTML = '<div class="empty-state">No decisions generated yet. Trigger an incident to start.</div>';
+        document.getElementById('signal-stream').innerHTML = `
+            <div class="stream-item">
+                <span class="timestamp">Now</span>
+                <span class="msg">System reset. Waiting for signals...</span>
+            </div>`;
+
+        // Reset Trigger Button if it was stuck
+        resetButton(triggerBtn);
+
+        addLog("Demo state cleared.", false);
+    } catch (e) {
+        alert('Failed to reset demo: ' + e);
+    } finally {
+        btn.textContent = 'Reset Demo';
+        btn.disabled = false;
+    }
+}
 
 function updateStatus(msg) {
     const el = document.getElementById('connection-status');

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,8 +8,11 @@
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
 </head>
+
 <body>
     <header>
         <div class="logo">DecisionOS <span class="badge">DEMO</span></div>
@@ -28,8 +32,11 @@
                     </div>
                 </div>
                 <button id="trigger-btn" class="primary-btn">Inject Synthetic Incident</button>
+                <div class="reset-container" style="margin-top: 12px; text-align: center;">
+                    <button id="reset-btn" class="text-btn">Reset Demo</button>
+                </div>
             </div>
-            
+
             <div class="card help-card">
                 <h3>About</h3>
                 <p>This demo visualizes the <strong>Multi-Agent Reasoning Chain</strong>.</p>
@@ -85,12 +92,14 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="expand-toggle">
                     <span>Show Agent Reasoning Chain</span>
-                    <svg width="12" height="12" viewBox="0 0 12 12"><path d="M6 9L1 4h10z"/></svg>
+                    <svg width="12" height="12" viewBox="0 0 12 12">
+                        <path d="M6 9L1 4h10z" />
+                    </svg>
                 </div>
-                
+
                 <div class="reasoning-chain hidden">
                     <div class="chain-step signal-step">
                         <div class="step-icon">📡</div>
@@ -127,4 +136,5 @@
 
     <script src="app.js"></script>
 </body>
+
 </html>

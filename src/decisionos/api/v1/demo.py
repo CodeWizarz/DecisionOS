@@ -61,6 +61,24 @@ async def trigger_demo_decision(
     
     return new_decision
 
+@router.post(
+    "/reset",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Reset demo state"
+)
+async def reset_demo(
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Clears all decisions to reset the demo environment.
+    """
+    # Delete all records from decisions table
+    # In a real app we might want to be more selective, but for demo this is fine.
+    # Note: DecisionModel is table 'decisions'
+    await db.execute(models.DecisionModel.__table__.delete())
+    await db.commit()
+    return None
+
 @router.get(
     "/decision/{decision_id}",
     response_model=schemas.Decision,
