@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     APP_NAME: str = "DecisionOS"
     ENV: Literal["development", "production", "test"] = "development"
     LOG_LEVEL: str = "INFO"
+    DEMO_MODE: bool = False
 
     # Database
     DATABASE_URL: str = "postgresql+asyncpg://user:password@localhost/decisionos"

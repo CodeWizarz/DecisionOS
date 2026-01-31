@@ -10,6 +10,8 @@ from decisionos.core.database import AsyncSessionLocal
 from decisionos.domain.models import DecisionModel
 from decisionos.engine.agents import SignalAgent, DecisionAgent, CriticAgent, SupervisorAgent
 
+from decisionos.core.config import settings
+
 # Ensure logging is configured in worker process
 configure_logging()
 logger = structlog.get_logger()
@@ -18,7 +20,7 @@ async def run_agent_pipeline(decision_id: str, payload: Dict[str, Any]):
     """
     Orchestrates the multi-agent flow and updates the database.
     """
-    logger.info("starting_agent_pipeline", decision_id=decision_id)
+    logger.info("starting_agent_pipeline", decision_id=decision_id, demo_mode=settings.DEMO_MODE)
     
     # 1. Initialize Agents
     signal_agent = SignalAgent()
@@ -26,22 +28,29 @@ async def run_agent_pipeline(decision_id: str, payload: Dict[str, Any]):
     critic_agent = CriticAgent()
     supervisor_agent = SupervisorAgent()
     
-    # 2. Construct Context (Simulate Ingestion/Normalization for Demo)
-    # in a real system, we'd fetch data_points from DB based on payload context
+    # 2. Construct Context
     logger.info("ingesting_signals", decision_id=decision_id)
     
-    # Mock data representing the Ops Scenario
-    # This data simulates finding a high latency cluster
-    mock_clusters = {
-        "web_tier_metrics": [
-            {"source": "datadog.latency.p99", "normalized_priority": 0.92, "timestamp": 123456789},
-            {"source": "datadog.error_rate", "normalized_priority": 0.4, "timestamp": 123456789}
-        ],
-        "db_tier_metrics": [
-            {"source": "postgres.cpu", "normalized_priority": 0.60, "timestamp": 123456789}
-        ]
-    }
+    mock_clusters = {}
     
+    if settings.DEMO_MODE:
+        # Preload synthetic data for deterministic demo behavior
+        # This ensures the 'Ops Incident' scenario always plays out correctly.
+        mock_clusters = {
+            "web_tier_metrics": [
+                {"source": "datadog.latency.p99", "normalized_priority": 0.92, "timestamp": 123456789},
+                {"source": "datadog.error_rate", "normalized_priority": 0.4, "timestamp": 123456789}
+            ],
+            "db_tier_metrics": [
+                {"source": "postgres.cpu", "normalized_priority": 0.60, "timestamp": 123456789}
+            ]
+        }
+    else:
+        # TODO: Implement real data fetching from DataPointModel
+        # For now, default to empty to avoid hallucinations on random noise
+        # payload might contain 'clusters' if passed from API
+        mock_clusters = payload.get("clusters", {})
+
     context = {"clusters": mock_clusters, "request_payload": payload}
     
     # 3. Execution Loop
